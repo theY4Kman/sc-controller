@@ -17,7 +17,7 @@ from scc.lib.hidparse_data import ModifierI2a, HidSensorProperty
 from scc.lib.hidparse_data import ItemType, ItemLength, ItemBase
 from scc.lib.hidparse_data import SensorEvent, SensorDataField
 from scc.lib.hidparse_data import Collection, Unit, UnitType
-from scc.lib import ioctl_opt
+from scc.lib import ioctl_opt, hidparse_data
 from scc.lib import IntEnum
 import ctypes, fcntl, collections, struct
 
@@ -244,7 +244,6 @@ def parse_item(it, page):
 					return item, page(uid)
 				except ValueError:
 					return item, uid
-				return item, page
 			else:
 				try:
 					return item, page(it[1])

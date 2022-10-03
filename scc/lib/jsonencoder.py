@@ -112,7 +112,7 @@ class JSONEncoder(object):
 		skipkeys is True, such items are simply skipped.
 
 		If *ensure_ascii* is true (the default), all non-ASCII
-		characters in the output are escaped with \uXXXX sequences,
+		characters in the output are escaped with \\uXXXX sequences,
 		and the results are str instances consisting of ASCII
 		characters only.  If ensure_ascii is False, a result may be a
 		unicode instance.  This usually happens if the input contains

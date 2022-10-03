@@ -74,6 +74,15 @@ class Controller(object):
 		Does nothing by default.
 		"""
 		pass
+
+
+	def apply_profile(self, profile):
+		"""
+		Called from daemon to apply controller profile
+
+		Does nothing by default.
+		"""
+		pass
 	
 	
 	def set_led_level(self, level):
@@ -141,7 +150,7 @@ class HapticData(object):
 	
 	
 	def get_position(self):
-		return HapticPos(self.data[0])
+		return HapticPos._value2member_map_[self.data[0]]
 	
 	def get_amplitude(self):
 		return self.data[1]

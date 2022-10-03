@@ -541,7 +541,7 @@ class BallModifier(Modifier, WholeHapticAction):
 	
 	def change(self, mapper, dx, dy, what):
 		if what in (None, STICK) or (mapper.controller_flags() & ControllerFlags.HAS_RSTICK and what == RIGHT):
-			return self.action.change(mapper, x, y, what)
+			return self.action.change(mapper, dx, dy, what)
 		if mapper.is_touched(what):
 			if mapper.was_touched(what):
 				t = time.time()
@@ -672,7 +672,7 @@ class DeadzoneModifier(Modifier):
 			return copysign(
 				clamp(
 					0,
-					((x - self.lower) / (self.upper - self.lower)) * range,
+					((float(x) - self.lower) / (self.upper - self.lower)) * range,
 					range),
 				x
 			), 0
@@ -763,6 +763,8 @@ class DeadzoneModifier(Modifier):
 	
 	def trigger(self, mapper, position, old_position):
 		position = self._convert(position, 0, TRIGGER_MAX)
+		if isinstance(old_position, int):
+			position = position[0]
 		return self.action.trigger(mapper, position, old_position)
 	
 	

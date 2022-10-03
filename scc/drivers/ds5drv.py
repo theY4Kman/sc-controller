@@ -10,6 +10,7 @@ import logging
 import sys
 from datetime import datetime
 
+from scc.actions import TriggerAction
 from scc.constants import ControllerFlags, HapticPos, SCButtons, STICK_PAD_MAX, STICK_PAD_MIN
 from scc.drivers.evdevdrv import (
     EvdevController,
@@ -87,6 +88,99 @@ class DualSenseHIDOutput(ctypes.Structure):
         ('lightbar_green', ctypes.c_ubyte),
         ('lightbar_blue', ctypes.c_ubyte),
     ]
+
+
+class TriggerEffectType(IntEnum):
+    CONTINUOUS_RESISTANCE = 0x01
+    SECTION_RESISTANCE = 0x02
+    VIBRATING = 0x06
+    EFFECT_EXTENDED = 0x23
+    CALIBRATE = 0xfc
+
+
+class TriggerEffect:
+    TYPE = 0
+
+    def data(self):
+        return bytes()
+
+    def as_bytes(self):
+        return bytearray(chr(self.TYPE) + bytes(self.data()).ljust(10, b'\x00'))
+
+    def as_ctypes_array(self):
+        return (ctypes.c_ubyte * 11)(*self.as_bytes())
+
+
+class ContinuousResistanceTriggerEffect(TriggerEffect):
+    TYPE = TriggerEffectType.CONTINUOUS_RESISTANCE
+
+    def __init__(self, start_pos=0, force=0):
+        self.start_pos = start_pos
+        self.force = force
+
+    def data(self):
+        return bytearray([self.start_pos, self.force])
+
+
+class SectionResistanceTriggerEffect(TriggerEffect):
+    TYPE = TriggerEffectType.SECTION_RESISTANCE
+
+    def __init__(self, start_pos=0, force=0):
+        self.start_pos = start_pos
+        self.force = force
+
+    def data(self):
+        return bytearray([self.start_pos, self.force])
+
+
+class VibratingTriggerEffect(TriggerEffect):
+    TYPE = TriggerEffectType.VIBRATING
+
+    def __init__(self, frequency=0, off_time=0):
+        self.frequency = frequency
+        self.off_time = off_time
+
+    def data(self):
+        return bytearray([self.frequency, self.off_time])
+
+
+class EffectExtendedTriggerEffect(TriggerEffect):
+    TYPE = TriggerEffectType.EFFECT_EXTENDED
+
+    def __init__(
+        self,
+        start_pos=0,
+        keep_effect=False,
+        begin_force=0,
+        middle_force=0,
+        end_force=0,
+        frequency=0,
+    ):
+        self.start_pos = start_pos
+        self.keep_effect = keep_effect
+        self.begin_force = begin_force
+        self.middle_force = middle_force
+        self.end_force = end_force
+        self.frequency = frequency
+
+    def data(self):
+        return bytearray(
+            [
+                0xff - self.start_pos,
+                0x02 if self.keep_effect else 0x00,
+                0x00,
+                self.begin_force,
+                self.middle_force,
+                self.end_force,
+                0x00,
+                0x00,
+                max(1, self.frequency // 2),
+            ]
+        )
+
+
+class CalibrateTriggerEffect(TriggerEffect):
+    TYPE = TriggerEffectType.CALIBRATE
 
 
 ICON_COLORS = [
@@ -298,6 +392,26 @@ class DS5Controller(HIDController):
         if self._feedback_cancel_task:
             self._feedback_cancel_task.cancel()
         self._feedback_cancel_task = self.mapper.schedule(duration, clear_feedback)
+
+    # def apply_profile(self, profile):
+    #     trigger_actions = [a for a in profile.triggers['RIGHT'].actions if isinstance(a, TriggerAction)]
+    #     if trigger_actions:
+    #         trigger_actions.sort(key=lambda a: a.press_level)
+    #         full_press_pos = trigger_actions[0].press_level
+    #
+    #         output = DualSenseHIDOutput(
+    #             operating_mode=OperatingMode.DS5_MODE,
+    #             physical_effect_control=PhysicalEffectControl.TRIGGER_EFFECTS_RIGHT,
+    #             right_trigger_effect=EffectExtendedTriggerEffect(
+    #                 start_pos=full_press_pos,
+    #                 begin_force=0xff,
+    #                 middle_force=0xff,
+    #                 end_force=0xff,
+    #                 frequency=1,
+    #             ).as_ctypes_array(),
+    #         )
+    #         print 'set effect extended at', full_press_pos, 'start_pos'
+    #         self.schedule_output('adaptive_trigger', output)
 
     def apply_config(self, config):
         icon = config['icon']

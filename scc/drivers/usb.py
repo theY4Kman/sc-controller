@@ -9,7 +9,7 @@ Callback will be called with following arguments:
 	callback(device, handle)
 Callback has to return created USBDevice instance or None.
 """
-from scc.lib import usb1
+from scc.lib import libusb1, usb1
 
 import time, traceback, logging
 log = logging.getLogger("USB")
@@ -32,7 +32,7 @@ class USBDevice(object):
 		callback(endpoint, data) is called repeadedly with every packed recieved.
 		"""
 		def callback_wrapper(transfer):
-			if (transfer.getStatus() != usb1.TRANSFER_COMPLETED or
+			if (transfer.getStatus() != libusb1.libusb_transfer_status.LIBUSB_TRANSFER_COMPLETED or
 				transfer.getActualLength() != size):
 				return
 			
@@ -48,7 +48,7 @@ class USBDevice(object):
 		
 		transfer = self.handle.getTransfer()
 		transfer.setInterrupt(
-			usb1.ENDPOINT_IN | endpoint,
+			libusb1.libusb_endpoint_direction.LIBUSB_ENDPOINT_IN | endpoint,
 			size,
 			callback=callback_wrapper,
 		)

@@ -131,6 +131,17 @@ class Mapper(object):
 			self.syn_list = set()
 	
 	
+	def set_profile(self, profile):
+		self.profile = profile
+
+		if self.controller:
+			self.controller.apply_profile(profile)
+
+
+	def get_profile(self):
+		return self.profile
+
+
 	def set_controller(self, c):
 		""" Sets controller device, used by some (one so far) actions """
 		self.controller = c

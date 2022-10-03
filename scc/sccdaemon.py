@@ -204,7 +204,7 @@ class SCCDaemon(Daemon):
 		mapper.mouse.reset()
 		
 		# This last line kinda depends on GIL...
-		mapper.profile = p
+		mapper.set_profile(p)
 		# Re-apply all locks
 		for c in self.clients:
 			c.reaply_locks(self, mapper)

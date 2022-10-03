@@ -179,11 +179,11 @@ class TriggerComponent(AEComponent, BindingEditor):
 		timeout = self.builder.get_object("sclTimeOut").get_value()
 		
 		if (trigger_style == "HIPFIRE_NORMAL") and self.half and self.full:
-				actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_NORMAL,timeout))
+			actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_NORMAL, timeout))
 		elif (trigger_style == "HIPFIRE_EXCLUSIVE") and self.half and self.full:
-				actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_EXCLUSIVE,timeout))
+			actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_EXCLUSIVE, timeout))
 		elif (trigger_style == "HIPFIRE_SENSIBLE") and self.half and self.full:
-				actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_SENSIBLE,timeout))
+			actions.append(HipfireAction(half_level, full_level, self.half, self.full, HIPFIRE_SENSIBLE, timeout))
 		else:
 			if self.half:
 				if self.full and trigger_style == "NORMAL_EXCLUSIVE":

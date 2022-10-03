@@ -6,12 +6,17 @@ Observes active window and commands scc-daemon to change profiles as needed.
 """
 from __future__ import unicode_literals
 
+import logging
+import os
+import sys
+
 from scc.x11.autoswitcher import AutoSwitcher
-import sys, os
+
+log = logging.getLogger("AutoswitchDaemon")
 
 if __name__ == "__main__":
 	from scc.tools import init_logging, set_logging_level
-	from scc.paths import get_share_path
+
 	init_logging(suffix=" AutoSwitcher")
 	set_logging_level('debug' in sys.argv, 'debug' in sys.argv)
 	

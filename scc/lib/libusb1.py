@@ -48,12 +48,17 @@ import platform
 import os.path
 import sys
 
+
 class Enum(object):
     def __init__(self, member_dict, scope_dict=None):
         if scope_dict is None:
             # Affect caller's locals, not this module's.
             # pylint: disable=protected-access
-            scope_dict = sys._getframe(1).f_locals
+            #XXX######################################################################################
+            #XXX######################################################################################
+            # scope_dict = sys._getframe(1).f_locals
+            scope_dict = {}
+            #XXX######################################################################################
             # pylint: enable=protected-access
         forward_dict = {}
         reverse_dict = {}
@@ -77,6 +82,11 @@ class Enum(object):
 
     def get(self, value, default=None):
         return self.reverse_dict.get(value, default)
+
+    def __getitem__(self, item):
+        return self.forward_dict.get(item)
+
+    __getattr__ = __getitem__
 
 _desc_type_dict = {
     'b': c_uint8,
@@ -249,7 +259,7 @@ libusb_class_code = Enum({
     'LIBUSB_CLASS_VENDOR_SPEC': 0xff
 })
 # pylint: disable=undefined-variable
-LIBUSB_CLASS_IMAGE = LIBUSB_CLASS_PTP
+LIBUSB_CLASS_IMAGE = libusb_class_code.LIBUSB_CLASS_PTP
 # pylint: enable=undefined-variable
 
 # Descriptor types as defined by the USB specification.
@@ -352,10 +362,10 @@ libusb_request_type = Enum({
 
 # BBB
 # pylint: disable=bad-whitespace,undefined-variable
-LIBUSB_TYPE_STANDARD = LIBUSB_REQUEST_TYPE_STANDARD
-LIBUSB_TYPE_CLASS    = LIBUSB_REQUEST_TYPE_CLASS
-LIBUSB_TYPE_VENDOR   = LIBUSB_REQUEST_TYPE_VENDOR
-LIBUSB_TYPE_RESERVED = LIBUSB_REQUEST_TYPE_RESERVED
+LIBUSB_TYPE_STANDARD = libusb_request_type.get('LIBUSB_REQUEST_TYPE_STANDARD')
+LIBUSB_TYPE_CLASS    = libusb_request_type.get('LIBUSB_REQUEST_TYPE_CLASS')
+LIBUSB_TYPE_VENDOR   = libusb_request_type.get('LIBUSB_REQUEST_TYPE_VENDOR')
+LIBUSB_TYPE_RESERVED = libusb_request_type.get('LIBUSB_REQUEST_TYPE_RESERVED')
 # pylint: enable=bad-whitespace,undefined-variable
 
 # Recipient bits of the bmRequestType field in control transfers. Values 4
@@ -861,7 +871,7 @@ except AttributeError:
     # Place holder
     def libusb_get_device_speed(_):
         # pylint: disable=undefined-variable
-        return LIBUSB_SPEED_UNKNOWN
+        return libusb_speed.LIBUSB_SPEED_UNKNOWN
         # pylint: enable=undefined-variable
 else:
     libusb_get_device_speed.argtypes = [libusb_device_p]
@@ -994,7 +1004,7 @@ def libusb_fill_control_transfer(
     transfer.dev_handle = dev_handle
     transfer.endpoint = 0
     # pylint: disable=undefined-variable
-    transfer.type = LIBUSB_TRANSFER_TYPE_CONTROL
+    transfer.type = libusb_transfer_type.LIBUSB_TRANSFER_TYPE_CONTROL
     # pylint: enable=undefined-variable
     transfer.timeout = timeout
     transfer.buffer = cast(buffer, c_void_p)
@@ -1016,7 +1026,7 @@ def libusb_fill_bulk_transfer(
     transfer.dev_handle = dev_handle
     transfer.endpoint = endpoint
     # pylint: disable=undefined-variable
-    transfer.type = LIBUSB_TRANSFER_TYPE_BULK
+    transfer.type = libusb_transfer_type.LIBUSB_TRANSFER_TYPE_BULK
     # pylint: enable=undefined-variable
     transfer.timeout = timeout
     transfer.buffer = cast(buffer, c_void_p)
@@ -1033,7 +1043,7 @@ def libusb_fill_interrupt_transfer(
     transfer.dev_handle = dev_handle
     transfer.endpoint = endpoint
     # pylint: disable=undefined-variable
-    transfer.type = LIBUSB_TRANSFER_TYPE_INTERRUPT
+    transfer.type = libusb_transfer_type.LIBUSB_TRANSFER_TYPE_INTERRUPT
     # pylint: enable=undefined-variable
     transfer.timeout = timeout
     transfer.buffer = cast(buffer, c_void_p)
@@ -1050,7 +1060,7 @@ def libusb_fill_iso_transfer(
     transfer.dev_handle = dev_handle
     transfer.endpoint = endpoint
     # pylint: disable=undefined-variable
-    transfer.type = LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
+    transfer.type = libusb_transfer_type.LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
     # pylint: enable=undefined-variable
     transfer.timeout = timeout
     transfer.buffer = cast(buffer, c_void_p)
@@ -1160,17 +1170,17 @@ libusb_interrupt_transfer.argtypes = [libusb_device_handle_p, c_uchar,
 
 # pylint: disable=undefined-variable
 def libusb_get_descriptor(dev, desc_type, desc_index, data, length):
-    return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN,
-                                   LIBUSB_REQUEST_GET_DESCRIPTOR,
+    return libusb_control_transfer(dev, libusb_endpoint_direction.LIBUSB_ENDPOINT_IN,
+                                   libusb_standard_request.LIBUSB_REQUEST_GET_DESCRIPTOR,
                                    (desc_type << 8) | desc_index, 0, data,
                                    length, 1000)
 # pylint: enable=undefined-variable
 
 # pylint: disable=undefined-variable
 def libusb_get_string_descriptor(dev, desc_index, langid, data, length):
-    return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN,
-                                   LIBUSB_REQUEST_GET_DESCRIPTOR,
-                                   (LIBUSB_DT_STRING << 8) | desc_index,
+    return libusb_control_transfer(dev, libusb_endpoint_direction.LIBUSB_ENDPOINT_IN,
+                                   libusb_standard_request.LIBUSB_REQUEST_GET_DESCRIPTOR,
+                                   (libusb_descriptor_type.LIBUSB_DT_STRING << 8) | desc_index,
                                    langid, data, length, 1000)
 # pylint: enable=undefined-variable
 
